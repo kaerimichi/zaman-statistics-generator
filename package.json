@@ -1,0 +1,11 @@
+{
+  "name": "zaman-statistics-generator",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "moment": "^2.22.2",
+    "moment-duration-format": "^2.2.2",
+    "moment-timezone": "^0.5.23"
+  }
+}
