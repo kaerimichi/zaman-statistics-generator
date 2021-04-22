@@ -34,14 +34,6 @@ function getWeekPunches (monthPunches, emptyPunches = false, onlyWorkDays = fals
       return weekDays.indexOf(entry.date) > -1 && entry.punches
     })
 }
-function getWeekTotalMinutes (weekPunches) {
-  const weekHours = weekPunches.reduce((acc, entry) => {
-    if (!entry.holiday) acc = acc + 8
-    return acc
-  }, 0)
-
-  return moment.duration({ hours: weekHours }).asMinutes()
-}
 
 function getWorkTime (punches = [], live = true) {
   const momentPunches = punches.map(punch => {
@@ -90,31 +82,31 @@ function getDayBalance (dayPunches = [], live = true) {
   return getWeekMinutes([dayPunches], live)
 }
 
-function compute (content) {
-  const { overallInfo, liveBalance } = content
-  const hourBankExists = Boolean(overallInfo.saldo)
-  const getDuration = stringTime => {
-    return Math.abs(
-      moment.duration(stringTime).asMinutes()
-    )
-  }
-  let totalWeekMinutes
-  let weekMinutes
-  let weekPunches
+function getTimeWorkedInCurrentMonth (monthPunches = []) {
+  return monthPunches.reduce((acc, entry) => {
+    const { punches } = entry
+    const workTime = getWorkTime(punches)
+
+    acc += workTime
+
+    return acc
+  }, 0)
+}
+
+function compute (content, workShift = 8) {
   let dayPunches
   let dayMinutes
   let remainingOfTodayAsMinutes
-  let hourBank
+  let timeWorkedInCurrentMonth
+
+  workShift = workShift * 60
 
   dayPunches = getWeekPunches(content.monthPunches)
     .filter(({ date }) => date === moment().format('YYYY-MM-DD'))
     .map(({ punches }) => punches)[0]
-  weekPunches = getWeekPunches(content.monthPunches).map(({ punches }) => punches)
-  totalWeekMinutes = getWeekTotalMinutes(getWeekPunches(content.monthPunches, true))
-  weekMinutes = getWeekMinutes(weekPunches, liveBalance)
-  dayMinutes = getDayBalance(dayPunches, liveBalance)
-  remainingOfTodayAsMinutes = 480 - dayMinutes < 0 ? 0 : 480 - dayMinutes
-  hourBank = getDuration(overallInfo.saldo)
+  dayMinutes = getDayBalance(dayPunches)
+  remainingOfTodayAsMinutes = workShift - dayMinutes < 0 ? 0 : workShift - dayMinutes
+  timeWorkedInCurrentMonth = getTimeWorkedInCurrentMonth(content.monthPunches)
 
   content.statistics = {
     serverTime: moment().format('HH:mm:ss'),
@@ -128,44 +120,15 @@ function compute (content) {
         asShortTime: getStringTime(remainingOfTodayAsMinutes)
       },
       extra: {
-        asMinutes: dayMinutes > 480 ? dayMinutes - 480 : null,
-        asShortTime: dayMinutes > 480 ? getStringTime(dayMinutes - 480) : null
-      }
-    },
-    weekBalance: {
-      total: {
-        asMinutes: totalWeekMinutes,
-        asShortTime: getStringTime(totalWeekMinutes)
-      },
-      completed: {
-        asMinutes: weekMinutes,
-        asShortTime: getStringTime(weekMinutes)
-      },
-      remaining: {
-        asMinutes: totalWeekMinutes - weekMinutes,
-        asShortTime: getStringTime(totalWeekMinutes - weekMinutes)
-      },
-      extra: {
-        asMinutes: weekMinutes < 0 ? Math.abs(weekMinutes) : null,
-        asShortTime: weekMinutes < 0 ? getStringTime(Math.abs(weekMinutes)) : null
+        asMinutes: dayMinutes > workShift ? dayMinutes - workShift : null,
+        asShortTime: dayMinutes > workShift ? getStringTime(dayMinutes - workShift) : null
       }
     },
     monthBalance: {
       completed: {
-        asMinutes: moment.duration(overallInfo.horasTrabalhadas).asMinutes(),
-        asShortTime: overallInfo.horasTrabalhadas
-      },
-      extra: hourBankExists
-        ? {
-          asMinutes: hourBank,
-          asShortTime: getStringTime(hourBank, true).replace('-', ''),
-          isPositive: !overallInfo.saldo.includes('-')
-        }
-        : {
-          asMinutes: 0,
-          asShortTime: '00:00',
-          isPositive: null
-        }
+        asMinutes: timeWorkedInCurrentMonth,
+        asShortTime: getStringTime(timeWorkedInCurrentMonth)
+      }
     }
   }
 
