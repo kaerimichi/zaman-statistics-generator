@@ -109,7 +109,7 @@ function compute (content, workShift = 8) {
   timeWorkedInCurrentMonth = getTimeWorkedInCurrentMonth(content.monthPunches)
 
   content.statistics = {
-    serverTime: moment().format('HH:mm:ss'),
+    currentTime: moment().format('HH:mm:ss'),
     dayBalance: {
       completed: {
         asMinutes: dayMinutes,
@@ -120,8 +120,8 @@ function compute (content, workShift = 8) {
         asShortTime: getStringTime(remainingOfTodayAsMinutes)
       },
       extra: {
-        asMinutes: dayMinutes > workShift ? dayMinutes - workShift : null,
-        asShortTime: dayMinutes > workShift ? getStringTime(dayMinutes - workShift) : null
+        asMinutes: dayMinutes > workShift ? dayMinutes - workShift : 0,
+        asShortTime: dayMinutes > workShift ? getStringTime(dayMinutes - workShift) : '00:00'
       }
     },
     monthBalance: {
