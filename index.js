@@ -18,23 +18,6 @@ function getWeekDays () {
     .map(date => moment(date).format('YYYY-MM-DD'))
 }
 
-function getWeekPunches (monthPunches, emptyPunches = false, onlyWorkDays = false) {
-  const weekDays = getWeekDays()
-
-  return monthPunches
-    .filter(entry => {
-      if (onlyWorkDays) {
-        return weekDays.indexOf(entry.date) > -1 && !entry.holiday
-      }
-
-      if (emptyPunches) {
-        return weekDays.indexOf(entry.date) > -1
-      }
-
-      return weekDays.indexOf(entry.date) > -1 && entry.punches
-    })
-}
-
 function getWorkTime (punches = [], live = true) {
   const momentPunches = punches.map(punch => {
     const [ hour, minute ] = punch.split(':')
@@ -101,9 +84,8 @@ function compute (content, workShift = 8) {
 
   workShift = workShift * 60
 
-  dayPunches = getWeekPunches(content.monthPunches)
-    .filter(({ date }) => date === moment().format('YYYY-MM-DD'))
-    .map(({ punches }) => punches)[0]
+  dayPunches = content.monthPunches
+    .find(e => e.date === moment().format('YYYY-MM-DD')).punches
   dayMinutes = getDayBalance(dayPunches)
   remainingOfTodayAsMinutes = workShift - dayMinutes < 0 ? 0 : workShift - dayMinutes
   timeWorkedInCurrentMonth = getTimeWorkedInCurrentMonth(content.monthPunches)
