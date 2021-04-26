@@ -76,8 +76,11 @@ function getHourBank (monthPunches, workShift) {
 }
 
 function getDayClosureEstimate (minutesRemaining, hourBalance = 0) {
+  const hourBankIsNeutral = minutesRemaining + hourBalance <= 0
   const estimate = moment()
     .add(minutesRemaining + hourBalance, 'minutes')
+
+  if (hourBankIsNeutral) return null
 
   return minutesRemaining > 0
     ? estimate.format('HH:mm')
