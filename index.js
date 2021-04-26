@@ -2,22 +2,6 @@ const moment = require('moment-timezone')
 
 require('moment-duration-format')
 
-function getWeekDays () {
-  const startOfWeek = moment().startOf('week')
-  const endOfWeek = moment().endOf('week')
-  let days = []
-  let day = startOfWeek
-
-  while (day <= endOfWeek) {
-    days.push(day.toDate())
-    day = day.clone().add(1, 'd')
-  }
-
-  return days
-    .filter(date => ['0', '6'].indexOf(moment(date).format('e')) < 0)
-    .map(date => moment(date).format('YYYY-MM-DD'))
-}
-
 function getWorkTime (punches = [], live = true) {
   const momentPunches = punches.map(punch => {
     const [ hour, minute ] = punch.split(':')
@@ -76,22 +60,52 @@ function getTimeWorkedInCurrentMonth (monthPunches = []) {
   }, 0)
 }
 
+function getHourBank (monthPunches, workShift) {
+  let totals
+
+  monthPunches = monthPunches.slice(0, -1)
+
+  totals = monthPunches.reduce((acc, { punches }) => {
+    acc.est = acc.est + workShift
+    acc.worked = acc.worked + getWorkTime(punches)
+
+    return acc
+  }, { est: 0, worked: 0 })
+
+  return totals.est - totals.worked
+}
+
+function getDayClosureEstimate (minutesRemaining, hourBalance = 0) {
+  const estimate = moment()
+    .add(minutesRemaining + hourBalance, 'minutes')
+
+  return minutesRemaining > 0
+    ? estimate.format('HH:mm')
+    : null
+}
+
 function compute (content, workShift = 8) {
   let dayPunches
   let dayMinutes
   let remainingOfTodayAsMinutes
   let timeWorkedInCurrentMonth
+  let hourBank
 
   workShift = workShift * 60
 
-  dayPunches = content.monthPunches
-    .find(e => e.date === moment().format('YYYY-MM-DD')).punches
+  dayPunches = content.monthPunches.find(e => e.date === moment().format('YYYY-MM-DD'))
+  dayPunches = dayPunches ? dayPunches.punches : []
   dayMinutes = getDayBalance(dayPunches)
   remainingOfTodayAsMinutes = workShift - dayMinutes < 0 ? 0 : workShift - dayMinutes
   timeWorkedInCurrentMonth = getTimeWorkedInCurrentMonth(content.monthPunches)
+  hourBank = getHourBank(content.monthPunches, workShift)
 
   content.statistics = {
     currentTime: moment().format('HH:mm:ss'),
+    dayClosureEstimate: {
+      workShiftBased: getDayClosureEstimate(remainingOfTodayAsMinutes),
+      hourBankBased: getDayClosureEstimate(remainingOfTodayAsMinutes, hourBank)
+    },
     dayBalance: {
       completed: {
         asMinutes: dayMinutes,
