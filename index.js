@@ -123,6 +123,16 @@ function compute (content, workShift = 8) {
         asShortTime: dayMinutes > workShift ? getStringTime(dayMinutes - workShift) : '00:00'
       }
     },
+    weekBalance: {
+      completed: {
+        asMinutes: 0,
+        asShortTime: '00:00'
+      },
+      remaining: {
+        asMinutes: 0,
+        asShortTime: '00:00'
+      }
+    },
     monthBalance: {
       completed: {
         asMinutes: timeWorkedInCurrentMonth,
