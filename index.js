@@ -94,6 +94,10 @@ function compute (content, workShift = 8) {
   let timeWorkedInCurrentMonth
   let hourBank
 
+  if (!content) {
+    return null
+  }
+
   workShift = workShift * 60
 
   dayPunches = content.monthPunches.find(e => e.date === moment().format('YYYY-MM-DD'))
