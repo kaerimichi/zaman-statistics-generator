@@ -1,8 +1,12 @@
 const moment = require('moment-timezone')
+const {
+  format,
+  intervalToDuration
+} = require('date-fns')
 
 require('moment-duration-format')
 
-function getWorkTime (punches = [], live = true) {
+function getTimeWorked (punches = [], live = true) {
   const momentPunches = punches.map(punch => {
     const [ hour, minute ] = punch.split(':')
     const timeObject = {
@@ -37,22 +41,10 @@ function getStringTime (minutes = 0, allowNegative = false) {
   return moment.duration({ minutes }).format('HH:mm', { trim: false })
 }
 
-function getWeekMinutes (weekPunches = [], live = true) {
-  const weekMinutes = weekPunches
-    .map(entry => getWorkTime(entry, live))
-    .reduce((a, b) => a + b, 0)
-
-  return weekMinutes < 0 ? 0 : weekMinutes
-}
-
-function getDayBalance (dayPunches = [], live = true) {
-  return getWeekMinutes([dayPunches], live)
-}
-
 function getTimeWorkedInCurrentMonth (monthPunches = []) {
   return monthPunches.reduce((acc, entry) => {
     const { punches } = entry
-    const workTime = getWorkTime(punches)
+    const workTime = getTimeWorked(punches)
 
     acc += workTime
 
@@ -67,7 +59,7 @@ function getHourBank (monthPunches, workShift, includeToday = false) {
 
   totals = monthPunches.reduce((acc, { punches }) => {
     acc.est = acc.est + workShift
-    acc.worked = acc.worked + getWorkTime(punches)
+    acc.worked = acc.worked + getTimeWorked(punches)
 
     return acc
   }, { est: 0, worked: 0 })
@@ -87,25 +79,26 @@ function getDayClosureEstimate (minutesRemaining, hourBalance = 0) {
     : null
 }
 
-function compute (content, workShift = 8) {
+function compute (monthPunches = [], workShift = 8) {
   let dayPunches
   let dayMinutes
   let remainingOfTodayAsMinutes
   let timeWorkedInCurrentMonth
   let hourBank
+  let content = {}
 
-  if (!content) {
+  if (!monthPunches.length) {
     return null
   }
 
   workShift = workShift * 60
 
-  dayPunches = content.monthPunches.find(e => e.date === moment().format('YYYY-MM-DD'))
+  dayPunches = monthPunches.find(e => e.date === moment().format('YYYY-MM-DD'))
   dayPunches = dayPunches ? dayPunches.punches : []
-  dayMinutes = getDayBalance(dayPunches)
+  dayMinutes = getTimeWorked(dayPunches)
   remainingOfTodayAsMinutes = workShift - dayMinutes < 0 ? 0 : workShift - dayMinutes
-  timeWorkedInCurrentMonth = getTimeWorkedInCurrentMonth(content.monthPunches)
-  hourBank = getHourBank(content.monthPunches, workShift)
+  timeWorkedInCurrentMonth = getTimeWorkedInCurrentMonth(monthPunches)
+  hourBank = getHourBank(monthPunches, workShift)
 
   content.statistics = {
     currentTime: moment().format('HH:mm:ss'),
@@ -153,4 +146,4 @@ function compute (content, workShift = 8) {
   return content
 }
 
-module.exports = { compute, getWorkTime, getStringTime }
+module.exports = { compute, getTimeWorked, getStringTime }
