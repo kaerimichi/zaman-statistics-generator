@@ -72,7 +72,7 @@ function getHourBank (monthPunches, workShift, includeToday = false) {
     return acc
   }, { est: 0, worked: 0 })
 
-  return totals.worked - totals.est
+  return totals.est - totals.worked
 }
 
 function getDayClosureEstimate (minutesRemaining, hourBalance = 0) {
@@ -101,7 +101,7 @@ function compute (content, workShift = 8) {
   dayMinutes = getDayBalance(dayPunches)
   remainingOfTodayAsMinutes = workShift - dayMinutes < 0 ? 0 : workShift - dayMinutes
   timeWorkedInCurrentMonth = getTimeWorkedInCurrentMonth(content.monthPunches)
-  hourBank = getHourBank(content.monthPunches, workShift, true)
+  hourBank = getHourBank(content.monthPunches, workShift)
 
   content.statistics = {
     currentTime: moment().format('HH:mm:ss'),
@@ -139,9 +139,9 @@ function compute (content, workShift = 8) {
         asShortTime: getStringTime(timeWorkedInCurrentMonth)
       },
       extra: {
-        asMinutes: hourBank,
-        asShortTime: getStringTime(hourBank, true).replace('-', ''),
-        isPositive: hourBank >= 0
+        asMinutes: -hourBank,
+        asShortTime: getStringTime(-hourBank, true).replace('-', ''),
+        isPositive: -hourBank >= 0
       }
     }
   }
