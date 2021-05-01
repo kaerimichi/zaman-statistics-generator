@@ -1,12 +1,10 @@
 {
   "name": "zaman-statistics-generator",
-  "version": "1.3.5",
+  "version": "1.4.0",
   "main": "index.js",
   "license": "MIT",
+  "type": "module",
   "dependencies": {
-    "date-fns": "^2.21.1",
-    "moment": "^2.22.2",
-    "moment-duration-format": "^2.2.2",
-    "moment-timezone": "^0.5.23"
+    "date-fns": "^2.21.1"
   }
 }

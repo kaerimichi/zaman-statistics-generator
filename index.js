@@ -86,7 +86,6 @@ export function compute (monthPunches = [], workShift = 8) {
   let remainingOfTodayAsMinutes
   let timeWorkedInCurrentMonth
   let hourBank
-  let content = {}
 
   if (!monthPunches.length) {
     return null
@@ -101,7 +100,7 @@ export function compute (monthPunches = [], workShift = 8) {
   timeWorkedInCurrentMonth = getTimeWorkedInCurrentMonth(monthPunches)
   hourBank = getHourBank(monthPunches, workShift)
 
-  content.statistics = {
+  return {
     currentTime: format(new Date(), 'HH:mm:ss'),
     dayClosureEstimate: {
       workShiftBased: getDayClosureEstimate(remainingOfTodayAsMinutes),
@@ -143,6 +142,4 @@ export function compute (monthPunches = [], workShift = 8) {
       }
     }
   }
-
-  return content
 }
