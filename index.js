@@ -1,6 +1,6 @@
 import { format, addMinutes, intervalToDuration } from 'date-fns'
 
-function getStringTime (minutes = 0, allowNegative = false) {
+export function getStringTime (minutes = 0, allowNegative = false) {
   let interval
 
   if (!allowNegative && minutes <= 0) {
@@ -17,7 +17,7 @@ function getStringTime (minutes = 0, allowNegative = false) {
   return `${interval.hours}:${interval.minutes}`
 }
 
-function getTimeWorked (punches = []) {
+export function getTimeWorked (punches = []) {
   if (punches.length % 2 !== 0) {
     punches.push(format(new Date(), 'HH:mm'))
   }
@@ -43,7 +43,7 @@ function getTimeWorked (punches = []) {
   }, 0)
 }
 
-function getTimeWorkedInCurrentMonth (monthPunches = []) {
+export function getTimeWorkedInCurrentMonth (monthPunches = []) {
   return monthPunches.reduce((acc, entry) => {
     const { punches } = entry
     const workTime = getTimeWorked(punches)
@@ -54,7 +54,7 @@ function getTimeWorkedInCurrentMonth (monthPunches = []) {
   }, 0)
 }
 
-function getHourBank (monthPunches, workShift, includeToday = false) {
+export function getHourBank (monthPunches, workShift, includeToday = false) {
   let totals
 
   if (!includeToday) monthPunches = monthPunches.slice(0, -1)
@@ -69,7 +69,7 @@ function getHourBank (monthPunches, workShift, includeToday = false) {
   return totals.est - totals.worked
 }
 
-function getDayClosureEstimate (minutesRemaining, hourBalance = 0) {
+export function getDayClosureEstimate (minutesRemaining, hourBalance = 0) {
   const hourBankIsNeutral = minutesRemaining + hourBalance <= 0
   const estimate = addMinutes(new Date(), minutesRemaining + hourBalance)
 
