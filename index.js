@@ -1,44 +1,46 @@
-const moment = require('moment-timezone')
-const {
-  format,
-  intervalToDuration
-} = require('date-fns')
-
-require('moment-duration-format')
-
-function getTimeWorked (punches = [], live = true) {
-  const momentPunches = punches.map(punch => {
-    const [ hour, minute ] = punch.split(':')
-    const timeObject = {
-      hours: parseInt(hour),
-      minutes: parseInt(minute)
-    }
-
-    return moment.duration(timeObject).asMinutes()
-  })
-  const workMinutes = momentPunches.reduce((acc, punch, index) => {
-    let currentMinutes = moment.duration(moment().format('HH:mm')).asMinutes()
-
-    if (index % 2 !== 0) {
-      acc += momentPunches[index] - momentPunches[index - 1]
-    } else {
-      if (index === momentPunches.length - 1 && live) {
-        acc += currentMinutes - momentPunches[index]
-      }
-    }
-
-    return acc
-  }, 0)
-
-  return moment.duration({ minutes: workMinutes }).asMinutes()
-}
+import { format, addMinutes, intervalToDuration } from 'date-fns'
 
 function getStringTime (minutes = 0, allowNegative = false) {
+  let interval
+
   if (!allowNegative && minutes <= 0) {
     return '00:00'
   }
 
-  return moment.duration({ minutes }).format('HH:mm', { trim: false })
+  interval = intervalToDuration(
+    { start: 0, end: (minutes * 1000) * 60 }
+  )
+
+  interval.hours = String(interval.hours).padStart(2, '0')
+  interval.minutes = String(interval.minutes).padStart(2, '0')
+
+  return `${interval.hours}:${interval.minutes}`
+}
+
+function getTimeWorked (punches = []) {
+  if (punches.length % 2 !== 0) {
+    punches.push(format(new Date(), 'HH:mm'))
+  }
+
+  return punches.reduce((acc, punch, index, arr) => {
+    const [ currHour, currMinute ] = punch.split(':')
+    const [ prevHour, prevMinute ] = index > 0
+      ? arr[index - 1].split(':')
+      : [ 0 , 0 ]
+
+    if (index % 2 !== 0) {
+      const { hours, minutes } = intervalToDuration(
+        {
+          start: new Date(0, 0, 0, parseInt(prevHour), parseInt(prevMinute), 0),
+          end: new Date(0, 0, 0, parseInt(currHour), parseInt(currMinute), 0)
+        }
+      )
+
+      acc += hours * 60 + minutes
+    }
+
+    return acc
+  }, 0)
 }
 
 function getTimeWorkedInCurrentMonth (monthPunches = []) {
@@ -69,17 +71,16 @@ function getHourBank (monthPunches, workShift, includeToday = false) {
 
 function getDayClosureEstimate (minutesRemaining, hourBalance = 0) {
   const hourBankIsNeutral = minutesRemaining + hourBalance <= 0
-  const estimate = moment()
-    .add(minutesRemaining + hourBalance, 'minutes')
+  const estimate = addMinutes(new Date(), minutesRemaining + hourBalance)
 
   if (hourBankIsNeutral) return null
 
   return minutesRemaining > 0
-    ? estimate.format('HH:mm')
+    ? format(estimate, 'HH:mm')
     : null
 }
 
-function compute (monthPunches = [], workShift = 8) {
+export function compute (monthPunches = [], workShift = 8) {
   let dayPunches
   let dayMinutes
   let remainingOfTodayAsMinutes
@@ -93,7 +94,7 @@ function compute (monthPunches = [], workShift = 8) {
 
   workShift = workShift * 60
 
-  dayPunches = monthPunches.find(e => e.date === moment().format('YYYY-MM-DD'))
+  dayPunches = monthPunches.find(e => e.date === format(new Date(), 'yyyy-MM-dd'))
   dayPunches = dayPunches ? dayPunches.punches : []
   dayMinutes = getTimeWorked(dayPunches)
   remainingOfTodayAsMinutes = workShift - dayMinutes < 0 ? 0 : workShift - dayMinutes
@@ -101,7 +102,7 @@ function compute (monthPunches = [], workShift = 8) {
   hourBank = getHourBank(monthPunches, workShift)
 
   content.statistics = {
-    currentTime: moment().format('HH:mm:ss'),
+    currentTime: format(new Date(), 'HH:mm:ss'),
     dayClosureEstimate: {
       workShiftBased: getDayClosureEstimate(remainingOfTodayAsMinutes),
       hourBankBased: getDayClosureEstimate(remainingOfTodayAsMinutes, hourBank)
@@ -136,7 +137,7 @@ function compute (monthPunches = [], workShift = 8) {
         asShortTime: getStringTime(timeWorkedInCurrentMonth)
       },
       extra: {
-        asMinutes: -hourBank,
+        asMinutes: hourBank,
         asShortTime: getStringTime(-hourBank, true).replace('-', ''),
         isPositive: -hourBank >= 0
       }
@@ -145,5 +146,3 @@ function compute (monthPunches = [], workShift = 8) {
 
   return content
 }
-
-module.exports = { compute, getTimeWorked, getStringTime }
