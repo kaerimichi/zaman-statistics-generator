@@ -1,5 +1,9 @@
 import { format, addMinutes, intervalToDuration } from 'date-fns'
 
+function cloneObj (obj) {
+  return obj ? JSON.parse(JSON.stringify(obj)) : null
+}
+
 export function getStringTime (minutes = 0, allowNegative = false) {
   let interval
 
@@ -18,6 +22,8 @@ export function getStringTime (minutes = 0, allowNegative = false) {
 }
 
 export function getTimeWorked (punches = []) {
+  punches = cloneObj(punches)
+
   if (punches.length % 2 !== 0) {
     punches.push(format(new Date(), 'HH:mm'))
   }
@@ -44,7 +50,7 @@ export function getTimeWorked (punches = []) {
 }
 
 export function getTimeWorkedInCurrentMonth (monthPunches = []) {
-  return monthPunches.reduce((acc, entry) => {
+  return cloneObj(monthPunches).reduce((acc, entry) => {
     const { punches } = entry
     const workTime = getTimeWorked(punches)
 
@@ -57,6 +63,7 @@ export function getTimeWorkedInCurrentMonth (monthPunches = []) {
 export function getHourBank (monthPunches, workShift, includeToday = false) {
   let totals
 
+  monthPunches = cloneObj(monthPunches)
   if (!includeToday) monthPunches = monthPunches.slice(0, -1)
 
   totals = monthPunches.reduce((acc, { punches }) => {
@@ -91,7 +98,7 @@ export function compute (monthPunches = [], workShift = 8) {
     return null
   }
 
-  monthPunches = JSON.parse(JSON.stringify(monthPunches))
+  monthPunches = cloneObj(monthPunches)
   workShift = workShift * 60
   dayPunches = monthPunches.find(e => e.date === format(new Date(), 'yyyy-MM-dd'))
   dayPunches = dayPunches ? dayPunches.punches : []
