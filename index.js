@@ -91,8 +91,8 @@ export function compute (monthPunches = [], workShift = 8) {
     return null
   }
 
+  monthPunches = JSON.parse(JSON.stringify(monthPunches))
   workShift = workShift * 60
-
   dayPunches = monthPunches.find(e => e.date === format(new Date(), 'yyyy-MM-dd'))
   dayPunches = dayPunches ? dayPunches.punches : []
   dayMinutes = getTimeWorked(dayPunches)
