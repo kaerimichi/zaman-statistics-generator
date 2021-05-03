@@ -73,7 +73,7 @@ export function getHourBank (monthPunches, workShift, includeToday = false) {
     return acc
   }, { est: 0, worked: 0 })
 
-  return totals.est - totals.worked
+  return - (totals.est - totals.worked)
 }
 
 export function getDayClosureEstimate (minutesRemaining, hourBalance = 0) {
@@ -144,8 +144,8 @@ export function compute (monthPunches = [], workShift = 8) {
       },
       extra: {
         asMinutes: hourBank,
-        asShortTime: getStringTime(-hourBank, true).replace('-', ''),
-        isPositive: -hourBank >= 0
+        asShortTime: getStringTime(hourBank, true).replace('-', ''),
+        isPositive: hourBank >= 0
       }
     }
   }
