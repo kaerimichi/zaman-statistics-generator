@@ -61,10 +61,15 @@ export function getTimeWorkedInCurrentMonth (monthPunches = []) {
 }
 
 export function getHourBank (monthPunches, workShift, includeToday = false) {
+  const currentDayHavePunches = Boolean(
+    monthPunches.find(e => e.date === format(new Date(), 'yyyy-MM-dd'))
+  )
   let totals
 
   monthPunches = cloneObj(monthPunches)
-  if (!includeToday) monthPunches = monthPunches.slice(0, -1)
+  if (!includeToday && currentDayHavePunches) {
+    monthPunches = monthPunches.slice(0, -1)
+  }
 
   totals = monthPunches.reduce((acc, { punches }) => {
     acc.est = acc.est + workShift
