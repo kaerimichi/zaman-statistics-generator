@@ -83,7 +83,7 @@ export function getHourBank (monthPunches, workShift, includeToday = false) {
 
 export function getDayClosureEstimate (minutesRemaining, hourBalance = 0) {
   const hourBankIsNeutral = minutesRemaining + hourBalance <= 0
-  const estimate = addMinutes(new Date(), minutesRemaining + hourBalance)
+  const estimate = addMinutes(new Date(), minutesRemaining - hourBalance)
 
   if (hourBankIsNeutral) return null
 
