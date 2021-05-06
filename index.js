@@ -15,7 +15,7 @@ export function getStringTime (minutes = 0, allowNegative = false) {
     { start: 0, end: (minutes * 1000) * 60 }
   )
 
-  interval.hours =+ interval.days * 24
+  interval.hours += interval.days * 24
 
   interval.hours = String(interval.hours).padStart(2, '0')
   interval.minutes = String(interval.minutes).padStart(2, '0')
