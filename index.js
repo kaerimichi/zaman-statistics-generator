@@ -99,13 +99,12 @@ export function compute (monthPunches = [], workShift = 8, hourBank = null) {
   let dayMinutes
   let remainingOfTodayAsMinutes
   let timeWorkedInCurrentMonth
-  let hourBank
 
   if (!monthPunches.length) {
     return null
   }
 
-  monthPunches = cloneObj(monthPunches).filter(e => e.punches.length > 0)
+  monthPunches = cloneObj(monthPunches).filter(e => e.punches && e.punches.length > 0)
   workShift = workShift * 60
   dayPunches = monthPunches.find(e => e.date === format(new Date(), 'yyyy-MM-dd'))
   dayPunches = dayPunches ? dayPunches.punches : []
