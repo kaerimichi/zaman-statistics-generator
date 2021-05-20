@@ -115,6 +115,7 @@ export function compute (monthPunches = [], workShift = 8, hourBank = null) {
 
   return {
     currentTime: format(new Date(), 'HH:mm:ss'),
+    serverTime: format(new Date(), 'HH:mm:ss'), // kept for compatibility
     dayClosureEstimate: {
       workShiftBased: getDayClosureEstimate(remainingOfTodayAsMinutes),
       hourBankBased: getDayClosureEstimate(remainingOfTodayAsMinutes, hourBank)
@@ -133,7 +134,11 @@ export function compute (monthPunches = [], workShift = 8, hourBank = null) {
         asShortTime: dayMinutes > workShift ? getStringTime(dayMinutes - workShift) : '00:00'
       }
     },
-    weekBalance: {
+    weekBalance: { // kept for compatibility
+      total: {
+        asMinutes: 0,
+        asShortTime: '00:00'
+      },
       completed: {
         asMinutes: 0,
         asShortTime: '00:00'
