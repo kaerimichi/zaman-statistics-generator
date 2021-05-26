@@ -1,10 +1,10 @@
-import { format, addMinutes, intervalToDuration } from 'date-fns'
+const { format, addMinutes, intervalToDuration } = require('date-fns')
 
 function cloneObj (obj) {
   return obj ? JSON.parse(JSON.stringify(obj)) : null
 }
 
-export function getStringTime (minutes = 0, allowNegative = false) {
+function getStringTime (minutes = 0, allowNegative = false) {
   let interval
 
   if (!allowNegative && minutes <= 0) {
@@ -23,7 +23,7 @@ export function getStringTime (minutes = 0, allowNegative = false) {
   return `${interval.hours}:${interval.minutes}`
 }
 
-export function getTimeWorked (punches = []) {
+function getTimeWorked (punches = []) {
   punches = cloneObj(punches)
 
   if (punches.length % 2 !== 0) {
@@ -51,7 +51,7 @@ export function getTimeWorked (punches = []) {
   }, 0)
 }
 
-export function getTimeWorkedInCurrentMonth (monthPunches = []) {
+function getTimeWorkedInCurrentMonth (monthPunches = []) {
   return cloneObj(monthPunches).reduce((acc, entry) => {
     const { punches } = entry
     const workTime = getTimeWorked(punches)
@@ -62,7 +62,7 @@ export function getTimeWorkedInCurrentMonth (monthPunches = []) {
   }, 0)
 }
 
-export function getHourBank (monthPunches, workShift, includeToday = false) {
+function getHourBank (monthPunches, workShift, includeToday = false) {
   const currentDayHavePunches = Boolean(
     monthPunches.find(e => e.date === format(new Date(), 'yyyy-MM-dd'))
   )
@@ -83,7 +83,7 @@ export function getHourBank (monthPunches, workShift, includeToday = false) {
   return - (totals.est - totals.worked)
 }
 
-export function getDayClosureEstimate (minutesRemaining, hourBalance = 0) {
+function getDayClosureEstimate (minutesRemaining, hourBalance = 0) {
   const hourBankIsNeutral = minutesRemaining - hourBalance <= 0
   const estimate = addMinutes(new Date(), minutesRemaining - hourBalance)
 
@@ -94,7 +94,7 @@ export function getDayClosureEstimate (minutesRemaining, hourBalance = 0) {
     : null
 }
 
-export function compute (monthPunches = [], workShift = 8, hourBank = null) {
+function compute (monthPunches = [], workShift = 8, hourBank = null) {
   let dayPunches
   let dayMinutes
   let remainingOfTodayAsMinutes
@@ -160,4 +160,13 @@ export function compute (monthPunches = [], workShift = 8, hourBank = null) {
       }
     }
   }
+}
+
+module.exports = {
+  getStringTime,
+  getTimeWorked,
+  getTimeWorkedInCurrentMonth,
+  getHourBank,
+  getDayClosureEstimate,
+  compute
 }

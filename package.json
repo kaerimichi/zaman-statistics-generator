@@ -1,9 +1,8 @@
 {
   "name": "zaman-statistics-generator",
-  "version": "1.4.12",
+  "version": "1.4.13",
   "main": "index.js",
   "license": "MIT",
-  "type": "module",
   "dependencies": {
     "date-fns": "^2.21.1"
   }
