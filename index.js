@@ -111,7 +111,7 @@ function compute (monthPunches = [], workShift = 8, hourBank = null) {
   dayMinutes = getTimeWorked(dayPunches)
   remainingOfTodayAsMinutes = workShift - dayMinutes < 0 ? 0 : workShift - dayMinutes
   timeWorkedInCurrentMonth = getTimeWorkedInCurrentMonth(monthPunches)
-  hourBank = hourBank || getHourBank(monthPunches, workShift)
+  hourBank = hourBank === null ? getHourBank(monthPunches, workShift) : hourBank
 
   return {
     currentTime: format(new Date(), 'HH:mm:ss'),
